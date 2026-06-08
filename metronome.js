@@ -10,11 +10,38 @@ const state = {
   lastPassedRidge: -1,
 };
 
+// ── gradient cache ────────────────────────────────────────────────────────────
+let gradientCache = null;
+
+function buildGradientCache(w) {
+  const oc = document.createElement('canvas');
+  oc.width = w;
+  oc.height = w;
+  const octx = oc.getContext('2d');
+  const cx = w / 2;
+  const R = w * 0.44;
+
+  const conic = octx.createConicGradient(-Math.PI / 2, cx, cx);
+  const gamma = 5;
+  const steps = 20;
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const v = Math.round(Math.pow(t, gamma) * 200);
+    conic.addColorStop(t, `rgb(${v},${v},${v})`);
+  }
+  octx.beginPath();
+  octx.arc(cx, cx, R, 0, Math.PI * 2);
+  octx.fillStyle = conic;
+  octx.fill();
+  gradientCache = oc;
+}
+
 // ── sizing ────────────────────────────────────────────────────────────────────
 function resize() {
   const size = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.58);
   canvas.width = size;
   canvas.height = size;
+  buildGradientCache(size);
   if (!state.playing) drawFrame();
 }
 window.addEventListener('resize', resize);
@@ -30,21 +57,15 @@ function drawFrame() {
 
   ctx.clearRect(0, 0, w, h);
 
-  // Conic gradient: jumps from light to dark at the hand position, smooth in between.
-  // createConicGradient uses canvas angle convention (0 = 3 o'clock), so subtract π/2.
-  const conic = ctx.createConicGradient(state.angle - Math.PI / 2, cx, cy);
-  const gamma = 5;
-  const steps = 20;
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const v = Math.round(Math.pow(t, gamma) * 200);
-    conic.addColorStop(t, `rgb(${v},${v},${v})`);
-  }
-
+  // Blit the cached gradient rotated to the current hand angle.
+  ctx.save();
   ctx.beginPath();
   ctx.arc(cx, cy, R, 0, Math.PI * 2);
-  ctx.fillStyle = conic;
-  ctx.fill();
+  ctx.clip();
+  ctx.translate(cx, cy);
+  ctx.rotate(state.angle);
+  ctx.drawImage(gradientCache, -cx, -cy);
+  ctx.restore();
 
   // Ridge lines
   if (state.ridges > 0) {
