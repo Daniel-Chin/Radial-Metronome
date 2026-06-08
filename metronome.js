@@ -33,8 +33,13 @@ function drawFrame() {
   // Conic gradient: jumps from light to dark at the hand position, smooth in between.
   // createConicGradient uses canvas angle convention (0 = 3 o'clock), so subtract π/2.
   const conic = ctx.createConicGradient(state.angle - Math.PI / 2, cx, cy);
-  conic.addColorStop(0, '#000');
-  conic.addColorStop(1, 'rgb(200, 200, 200)');
+  const gamma = 5;
+  const steps = 20;
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const v = Math.round(Math.pow(t, gamma) * 200);
+    conic.addColorStop(t, `rgb(${v},${v},${v})`);
+  }
 
   ctx.beginPath();
   ctx.arc(cx, cy, R, 0, Math.PI * 2);
@@ -148,12 +153,18 @@ const playBtn = document.getElementById('play-btn');
 playBtn.addEventListener('click', () => {
   AudioEngine.resume();
   state.playing = !state.playing;
+  document.body.classList.toggle('playing', state.playing);
   playBtn.textContent = state.playing ? 'Stop' : 'Play';
   if (state.playing) {
     state.lastTime = null;
     requestAnimationFrame(loop);
   }
 });
+
+const infoOverlay = document.getElementById('info-overlay');
+document.getElementById('info-btn').addEventListener('click', () => infoOverlay.classList.add('open'));
+document.getElementById('info-close').addEventListener('click', () => infoOverlay.classList.remove('open'));
+infoOverlay.addEventListener('click', (e) => { if (e.target === infoOverlay) infoOverlay.classList.remove('open'); });
 
 updateDisplays();
 drawFrame();
