@@ -170,6 +170,26 @@ document.getElementById('spm-slider').addEventListener('input', (e) => setTempoF
 document.getElementById('ridges-inc').addEventListener('click', () => setRidges(state.ridges + 1));
 document.getElementById('ridges-dec').addEventListener('click', () => setRidges(state.ridges - 1));
 
+// ── wake lock ─────────────────────────────────────────────────────────────────
+let wakeLock = null;
+
+async function acquireWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+  } catch (_) {}
+}
+
+function releaseWakeLock() {
+  wakeLock?.release();
+  wakeLock = null;
+}
+
+// Re-acquire after tab becomes visible (browser releases lock on hide)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && state.playing) acquireWakeLock();
+});
+
 const playBtn = document.getElementById('play-btn');
 playBtn.addEventListener('click', () => {
   AudioEngine.resume();
@@ -178,7 +198,10 @@ playBtn.addEventListener('click', () => {
   playBtn.textContent = state.playing ? 'Stop' : 'Play';
   if (state.playing) {
     state.lastTime = null;
+    acquireWakeLock();
     requestAnimationFrame(loop);
+  } else {
+    releaseWakeLock();
   }
 });
 
