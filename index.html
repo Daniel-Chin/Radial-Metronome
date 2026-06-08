@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radial Metronome</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <div id="title">Radial Metronome</div>
+    <canvas id="canvas"></canvas>
+    <div id="controls">
+      <div class="control-group">
+        <label>Measures / Min</label>
+        <div class="row">
+          <button id="tempo-dec">−</button>
+          <span id="tempo-display">30</span>
+          <button id="tempo-inc">+</button>
+        </div>
+        <input type="range" id="tempo-slider" min="1" max="300" value="30">
+      </div>
+      <div class="control-group">
+        <label>Sec / Measure</label>
+        <div class="row">
+          <button id="spm-dec">−</button>
+          <span id="spm-display">2</span>
+          <button id="spm-inc">+</button>
+        </div>
+        <input type="range" id="spm-slider" min="1" max="300" value="2">
+      </div>
+      <div class="control-group">
+        <label>Subdivisions</label>
+        <div class="row">
+          <button id="ridges-dec">−</button>
+          <span id="ridges-display">1</span>
+          <span class="unit">/ measure</span>
+          <button id="ridges-inc">+</button>
+        </div>
+      </div>
+      <div class="control-group row">
+        <button id="play-btn">Play</button>
+      </div>
+    </div>
+  </div>
+  <script src="audio.js"></script>
+  <script src="metronome.js"></script>
+</body>
+</html>
